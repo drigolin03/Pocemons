@@ -1,19 +1,31 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import axiosClient from './axiosClient';
 
 function PokemonPage() {
-  const { id } = useParams();
-  const [pokemon, setPokemon] = useState(null);
+  const { id } = useParams(); // Получаем ID из маршрута
+  const [pokemon, setPokemon] = useState(null); // Хранение данных покемона
+  const [loading, setLoading] = useState(true); // Состояние загрузки
+  const [error, setError] = useState(null); // Состояние ошибки
 
   useEffect(() => {
-    fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
-      .then((response) => response.json())
-      .then((data) => setPokemon(data));
+    // Запрос информации о конкретном покемоне
+    axiosClient
+      .get(`pokemon/${id}`)
+      .then((response) => {
+        setPokemon(response.data); // Сохраняем данные о покемоне
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
   }, [id]);
 
-  if (!pokemon) {
-    return <p>Loading...</p>;
-  }
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+
+  if (!pokemon) return null;
 
   return (
     <div>
